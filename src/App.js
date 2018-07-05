@@ -9,16 +9,17 @@ class App extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      secret_tmp: JSON.parse(localStorage.getItem('2fa_tmp')) || ''
+      secret_tmp: JSON.parse(localStorage.getItem('2fa_tmp')) || {}
     }
     this.gerarQrCode = this.gerarQrCode.bind(this)
     this.verificaToken = this.verificaToken.bind(this)
   }
 
-  componentWillount() {    
-    if ( localStorage.getItem('2fa_tmp') ) {
+  componentWillMount() {    
+    if ( !localStorage.getItem('2fa_tmp') ) {
       var secret = speakeasy.generateSecret();
-      localStorage.setItem( '2fa_tmp', JSON.stringify(secret) )      
+      localStorage.setItem( '2fa_tmp', JSON.stringify(secret) )    
+      console.log('Teste')  
     }
 
     this.setState({
@@ -37,13 +38,11 @@ class App extends Component {
   }
 
   verificaToken (token) {
-    console.log(this.state.secret_tmp)
     var verified = speakeasy.totp.verify({
-      secret: this.state.secret_tmp.base32,
-      encoding: 'base32',
+      secret: this.state.secret_tmp.ascii,
+      encoding: 'ascii',
       token: token
     })
-
     return verified
   }
 
@@ -60,7 +59,7 @@ class App extends Component {
         <div>
           <h2>Testando o 2fa com o speakeasy</h2>
           <img src={`${this.gerarQrCode()}`} />
-          <h3>{console.log(this.verificaToken())}</h3>
+          <h3>{console.log(this.verificaToken('931104'))}</h3>
         </div>
       </div>
     );
