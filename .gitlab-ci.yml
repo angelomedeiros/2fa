@@ -1,0 +1,6 @@
+image: node
+
+deploy to surge:
+    stage: build
+    script:
+        - ls
