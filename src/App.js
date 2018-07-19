@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import decode from 'hi-base32'
 import * as speakeasy from 'speakeasy'
 import QRCode from 'qrcode'
 
@@ -28,10 +29,14 @@ class App extends Component {
     })
   }
 
+  secret() {
+    return this.state.secret_tmp.base32
+  }
+
   gerarQrCode () {
     let url;
 
-    QRCode.toDataURL(this.state.secret_tmp.otpauth_url, function(err, data_url) {
+    QRCode.toDataURL(`otpauth://totp/SecretKey?secret=${this.secret()}`, function(err, data_url) {
       url = data_url;
     })
 
@@ -40,7 +45,7 @@ class App extends Component {
 
   verificaToken (token) {
     var verified = speakeasy.totp.verify({
-      secret: this.state.secret_tmp.ascii,
+      secret: decode.decode(this.secret()),
       encoding: 'ascii',
       token: token
     })
@@ -66,12 +71,15 @@ class App extends Component {
         <div>
           <h2>Testando o 2fa com o speakeasy</h2>
           <img src={`${this.gerarQrCode()}`} />
+          <h3 style={{ color: '#17B935' }}>{`Token: ${this.secret()}`}</h3>
           <p> Capture o código QR no app de autenticação </p>
           <label htmlFor="token">Insira o código: </label>
-          <input type='text' id='token' value={this.state.token} onChange={this.handleChange} />
-          <h3>{
-            this.verificaToken(this.state.token) ? 'Sucesso, código válido!' : 'Código inválido, obtenha um novo!'
-          }</h3>
+          <input type='text' id='token' value={this.state.token} onChange={this.handleChange} />          
+          {
+            this.verificaToken(this.state.token) ? 
+              <h2>Sucesso, código válido!</h2> :
+              <h2>Código inválido, obtenha um novo</h2>
+          }
         </div>
       </div>
     );
